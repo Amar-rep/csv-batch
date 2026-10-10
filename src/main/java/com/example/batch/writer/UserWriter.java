@@ -8,17 +8,16 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
 
-@Component
-@Slf4j
-@RequiredArgsConstructor
-public class UserWriter implements ItemWriter<UserRecord> {
+// @Component
+// @Slf4j
+// @RequiredArgsConstructor
+// public class UserWriter implements ItemWriter<UserRecord> {
 
-    private final UserRecordRepository repository;
+// private final UserRecordRepository repository;
 
-    @Override
-    public void write(Chunk<? extends UserRecord> chunk) {
-        repository.saveAll(chunk.getItems());
-        chunk.forEach(user -> log.info("Imported user: {} {} <{}>",
-                user.getFirstName(), user.getLastName(), user.getEmail()));
-    }
-}
+// @Override
+// public void write(Chunk<? extends UserRecord> chunk) {
+// repository.saveAll(chunk.getItems());
+
+// }
+// }

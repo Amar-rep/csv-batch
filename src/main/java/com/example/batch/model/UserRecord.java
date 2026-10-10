@@ -23,25 +23,19 @@ public class UserRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "employee_id")
+    private Long employee_id;
+
     @Column(name = "first_name", length = 100)
     private String firstName;
 
     @Column(name = "last_name", length = 100)
     private String lastName;
 
-    @Column(length = 20)
-    private String zipcode;
-
-    @Column(length = 50)
-    private String phone1;
-
-    @Column(length = 50)
-    private String phone2;
-
     @Column(length = 320)
     private String email;
 
-    @Column(name = "website", length = 500)
-    private String web;
+    @Column(name = "salary")
+    private Double salary;
 
 }

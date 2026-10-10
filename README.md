@@ -26,6 +26,8 @@ The application exposes `POST /api/imports`. Upload the CSV as multipart form da
 curl.exe -F "file=@src/main/resources/user_details_500.csv" http://localhost:8080/api/imports
 ```
 
+Swagger UI is available at `http://localhost:8080/swagger-ui.html`; the raw OpenAPI definition is at `http://localhost:8080/v3/api-docs`.
+
 Spring Batch automatically creates and uses its `BATCH_*` repository tables in PostgreSQL. `schema.sql` creates the `user_records` business table if it does not exist. Configure the connection in `src/main/resources/application.properties` before running in another environment.
 
 ## Test
