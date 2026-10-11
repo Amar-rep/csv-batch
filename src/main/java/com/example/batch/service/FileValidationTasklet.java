@@ -23,7 +23,7 @@ public class FileValidationTasklet implements Tasklet {
 
     private static final String HEADER = "employee_id,firstName,lastName,email,salary";
 
-    @Value("#{jobParameters['inputFile']}")
+    @Value("${batch.file.path}")
     private String filePath;
 
     @Value("${csv.max-file-size}")
@@ -36,25 +36,30 @@ public class FileValidationTasklet implements Tasklet {
         if (filePath == null || filePath.isBlank()) {
             errorList.add("File path missing");
         } else {
-            Path path = Path.of(filePath);
+            Path path = Path.of(filePath).toAbsolutePath().normalize();
 
-            if (!path.toString().toLowerCase(Locale.ROOT).endsWith(".csv")) {
+            if (!Files.exists(path)) {
+                errorList.add("File does not exist: " + path);
+            } else {
+                if (!path.toString().toLowerCase(Locale.ROOT).endsWith(".csv")) {
 
-                errorList.add("Not a CSV file");
-            }
+                    errorList.add("Not a CSV file");
+                }
 
-            if (Files.size(path) == 0) {
+                long fileSize = Files.size(path);
+                if (fileSize == 0) {
 
-                errorList.add("FIle is empty");
-            }
-            if (Files.size(path) >= maxFileSize.toBytes()) {
-                errorList.add("Invalid file size too large");
-            }
-            try (BufferedReader reader = Files.newBufferedReader(path)) {
-                String header = reader.readLine();
+                    errorList.add("File is empty");
+                }
+                if (fileSize >= maxFileSize.toBytes()) {
+                    errorList.add("Invalid file size too large");
+                }
+                try (BufferedReader reader = Files.newBufferedReader(path)) {
+                    String header = reader.readLine();
 
-                if (!HEADER.equals(header)) {
-                    errorList.add("invalid header");
+                    if (!HEADER.equals(header)) {
+                        errorList.add("Invalid CSV headers");
+                    }
                 }
             }
 

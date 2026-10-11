@@ -4,42 +4,43 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
-import com.example.batch.Exception.InvalidRecordException;
+import com.example.batch.model.UserProcessingResult;
 import com.example.batch.model.UserRecord;
 
 @Component
-public class UserProcessor implements ItemProcessor<UserRecord, UserRecord> {
+public class UserProcessor implements ItemProcessor<UserRecord, UserProcessingResult> {
 
 	@Override
-	public UserRecord process(UserRecord user) {
+	public UserProcessingResult process(UserRecord user) {
 
 		if (user == null) {
-			throw new InvalidRecordException("UserRecord Null error");
+			return UserProcessingResult.invalid(null, "UserRecord null error");
 		}
 
 		if (!isValidEmail(user.getEmail())) {
-			throw new InvalidRecordException("Invalid email");
+			return UserProcessingResult.invalid(user, "Invalid email");
 		}
 		if (!isValidSalary(user.getSalary())) {
-			throw new InvalidRecordException("Invalid salary info");
+			return UserProcessingResult.invalid(user, "Invalid salary info");
 		}
 
 		if (!isValidName(user.getFirstName(), user.getLastName())) {
-			throw new InvalidRecordException("invalid name");
+			return UserProcessingResult.invalid(user, "Invalid name");
 		}
 
 		user.setFirstName(trimAndUppercase(user.getFirstName()));
 		user.setLastName(trim(user.getLastName()));
 		user.setEmail(trim(user.getEmail()).toLowerCase());
-		return user;
+		return UserProcessingResult.valid(user);
 	}
 
-	private boolean isValidName(String FirstName, String LastName) {
-		return FirstName != null && LastName != null;
+	private boolean isValidName(String firstName, String lastName) {
+		return firstName != null && !firstName.isBlank()
+				&& lastName != null && !lastName.isBlank();
 	}
 
 	private boolean isValidEmail(String email) {
-		return email != null && EmailValidator.getInstance().isValid(email);
+		return email != null && EmailValidator.getInstance().isValid(email.trim());
 	}
 
 	private boolean isValidSalary(Double salary) {

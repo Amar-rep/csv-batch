@@ -1,5 +1,7 @@
 package com.example.batch.config;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
@@ -13,8 +15,9 @@ public class BatchTaskExecutorConfig {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setCorePoolSize(4);
 		executor.setMaxPoolSize(4);
-		executor.setQueueCapacity(8);
-		executor.setThreadNamePrefix("batch-");
+		executor.setQueueCapacity(100);
+		executor.setThreadNamePrefix("batch-processor-");
+		executor.setWaitForTasksToCompleteOnShutdown(true);
 		executor.initialize();
 		return executor;
 	}
