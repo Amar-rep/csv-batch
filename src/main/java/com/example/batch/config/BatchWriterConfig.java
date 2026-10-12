@@ -13,33 +13,30 @@ import com.example.batch.model.UserRecord;
 @Configuration
 public class BatchWriterConfig {
 
-    @Bean
-    public JdbcBatchItemWriter<UserRecord> userWriter(DataSource dataSource) {
-        return new JdbcBatchItemWriterBuilder<UserRecord>()
-                .dataSource(dataSource)
-                .sql("""
-                        INSERT INTO user_records
-                            (employee_id, first_name, last_name, email, salary)
-                        VALUES
-                            (:employee_id, :firstName, :lastName, :email, :salary)
-                        ON CONFLICT DO NOTHING
-                        """)
-                .beanMapped()
-                .assertUpdates(false)
-                .build();
-    }
+	private static final String INSERT_USER_STRING = """
+			INSERT INTO user_records
+			(employee_id, first_name, last_name, email, salary)
+			VALUES
+			   (:employee_id, :firstName, :lastName, :email, :salary)
+			ON CONFLICT DO NOTHING
+			""";
+	private static final String INSERT_FAILED_STRING = """
+			INSERT INTO failed_user_record
+			   (job_execution_id, first_name, last_name, email, error_message, created_at)
+			VALUES
+			   (:jobExecutionId, :firstName, :lastName, :email, :errorMessage, :createdAt)
+			""";
 
-    @Bean
-    public JdbcBatchItemWriter<FailedUserRecord> failedUserWriter(DataSource dataSource) {
-        return new JdbcBatchItemWriterBuilder<FailedUserRecord>()
-                .dataSource(dataSource)
-                .sql("""
-                        INSERT INTO failed_user_record
-                            (job_execution_id, first_name, last_name, email, error_message, created_at)
-                        VALUES
-                            (:jobExecutionId, :firstName, :lastName, :email, :errorMessage, :createdAt)
-                        """)
-                .beanMapped()
-                .build();
-    }
+	@Bean
+	public JdbcBatchItemWriter<UserRecord> userWriter(DataSource dataSource) {
+		return new JdbcBatchItemWriterBuilder<UserRecord>().dataSource(dataSource).sql(INSERT_USER_STRING).beanMapped()
+				.assertUpdates(false).build();
+	}
+
+	@Bean
+	public JdbcBatchItemWriter<FailedUserRecord> failedUserWriter(DataSource dataSource) {
+		return new JdbcBatchItemWriterBuilder<FailedUserRecord>().dataSource(dataSource).sql(INSERT_FAILED_STRING)
+				.beanMapped().build();
+	}
+
 }

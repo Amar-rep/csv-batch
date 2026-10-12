@@ -14,22 +14,20 @@ import com.example.batch.writer.ProcessingResultWriter;
 
 @Configuration
 public class AsyncIntegrationConfig {
-    @Bean
-    public AsyncItemProcessor<UserRecord, UserProcessingResult> asyncUserProcessor(
-            UserProcessor userProcessor,
-            @Qualifier("batchTaskExecutor") TaskExecutor batchTaskExecutor) {
-        AsyncItemProcessor<UserRecord, UserProcessingResult> processor = new AsyncItemProcessor<>();
-        processor.setDelegate(userProcessor);
-        processor.setTaskExecutor(batchTaskExecutor);
-        return processor;
-    }
+	@Bean
+	public AsyncItemProcessor<UserRecord, UserProcessingResult> asyncUserProcessor(UserProcessor userProcessor,
+			@Qualifier("batchTaskExecutor") TaskExecutor batchTaskExecutor) {
+		AsyncItemProcessor<UserRecord, UserProcessingResult> processor = new AsyncItemProcessor<>();
+		processor.setDelegate(userProcessor);
+		processor.setTaskExecutor(batchTaskExecutor);
+		return processor;
+	}
 
-    @Bean
-    public AsyncItemWriter<UserProcessingResult> asyncUserWriter(
-            ProcessingResultWriter processingResultWriter) {
-        AsyncItemWriter<UserProcessingResult> writer = new AsyncItemWriter<>();
-        writer.setDelegate(processingResultWriter);
-        return writer;
-    }
+	@Bean
+	public AsyncItemWriter<UserProcessingResult> asyncUserWriter(ProcessingResultWriter processingResultWriter) {
+		AsyncItemWriter<UserProcessingResult> writer = new AsyncItemWriter<>();
+		writer.setDelegate(processingResultWriter);
+		return writer;
+	}
 
 }

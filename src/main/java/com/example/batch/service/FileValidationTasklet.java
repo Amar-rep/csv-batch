@@ -9,7 +9,6 @@ import java.util.Locale;
 
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
-import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
@@ -18,57 +17,52 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.unit.DataSize;
 
 @Component
-@StepScope
+
 public class FileValidationTasklet implements Tasklet {
 
-    private static final String HEADER = "employee_id,firstName,lastName,email,salary";
+	private static final String HEADER = "employee_id,firstName,lastName,email,salary";
 
-    @Value("${batch.file.path}")
-    private String filePath;
+	@Value("${batch.file.path}")
+	private String filePath;
 
-    @Value("${csv.max-file-size}")
-    private DataSize maxFileSize;
+	@Value("${csv.max-file-size}")
+	private DataSize maxFileSize;
 
-    @Override
-    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-        List<String> errorList = new ArrayList<>();
+	@Override
+	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+		List<String> errorList = new ArrayList<>();
 
-        if (filePath == null || filePath.isBlank()) {
-            errorList.add("File path missing");
-        } else {
-            Path path = Path.of(filePath).toAbsolutePath().normalize();
+		if (filePath == null || filePath.isBlank()) {
+			errorList.add("File path missing");
+		} else {
+			Path path = Path.of(filePath).toAbsolutePath().normalize();
+			if (!Files.exists(path)) {
+				errorList.add("File does not exist: " + path);
+			} else {
+				if (!path.toString().toLowerCase(Locale.ROOT).endsWith(".csv")) {
 
-            if (!Files.exists(path)) {
-                errorList.add("File does not exist: " + path);
-            } else {
-                if (!path.toString().toLowerCase(Locale.ROOT).endsWith(".csv")) {
+					errorList.add("Not a CSV file");
+				}
+				long fileSize = Files.size(path);
+				if (fileSize == 0) {
 
-                    errorList.add("Not a CSV file");
-                }
+					errorList.add("File is empty");
+				}
+				if (fileSize >= maxFileSize.toBytes()) {
+					errorList.add("Invalid file size too large");
+				}
+				try (BufferedReader reader = Files.newBufferedReader(path)) {
+					String header = reader.readLine();
 
-                long fileSize = Files.size(path);
-                if (fileSize == 0) {
-
-                    errorList.add("File is empty");
-                }
-                if (fileSize >= maxFileSize.toBytes()) {
-                    errorList.add("Invalid file size too large");
-                }
-                try (BufferedReader reader = Files.newBufferedReader(path)) {
-                    String header = reader.readLine();
-
-                    if (!HEADER.equals(header)) {
-                        errorList.add("Invalid CSV headers");
-                    }
-                }
-            }
-
-        }
-
-        if (!errorList.isEmpty()) {
-            contribution.setExitStatus(new ExitStatus("VALIDATION_FAILED", String.join(",", errorList)));
-        }
-
-        return RepeatStatus.FINISHED;
-    }
+					if (!HEADER.equals(header)) {
+						errorList.add("Invalid CSV headers");
+					}
+				}
+			}
+		}
+		if (!errorList.isEmpty()) {
+			contribution.setExitStatus(new ExitStatus("VALIDATION_FAILED", String.join(",", errorList)));
+		}
+		return RepeatStatus.FINISHED;
+	}
 }

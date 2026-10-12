@@ -2,8 +2,6 @@ package com.example.batch.config;
 
 import java.util.concurrent.Future;
 
-import javax.sql.DataSource;
-
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -11,21 +9,15 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.integration.async.AsyncItemProcessor;
 import org.springframework.batch.integration.async.AsyncItemWriter;
-import org.springframework.batch.item.database.JdbcBatchItemWriter;
-import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.example.batch.model.FailedUserRecord;
 import com.example.batch.model.UserProcessingResult;
 import com.example.batch.model.UserRecord;
-import com.example.batch.processor.UserProcessor;
 import com.example.batch.service.FileValidationTasklet;
-import com.example.batch.writer.ProcessingResultWriter;
 
 @Configuration
 public class BatchConfig {
@@ -45,11 +37,12 @@ public class BatchConfig {
 			@Qualifier("asyncUserProcessor") AsyncItemProcessor<UserRecord, UserProcessingResult> asyncUserProcessor,
 			@Qualifier("asyncUserWriter") AsyncItemWriter<UserProcessingResult> asyncUserWriter) {
 		return new StepBuilder("importUserStep", jobRepository)
-				.<UserRecord, Future<UserProcessingResult>>chunk(10, transactionManager)
+				.<UserRecord, Future<UserProcessingResult>>chunk(10,transactionManager)
 				.reader(csvReader)
 				.processor(asyncUserProcessor)
 				.writer(asyncUserWriter)
 				.build();
+		
 	}
 
 	@Bean
